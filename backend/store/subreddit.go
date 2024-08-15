@@ -1,10 +1,13 @@
 package store
 
-type Subreddit struct {
-	BaseModel
-	Name string `gorm:"not null;type:varchar(32);column:name;unique;index"`
+import "gorm.io/gorm"
 
-	Posts []Post `gorm:"foreignKey:SubredditID;references:ID"`
+type Subreddit struct {
+	gorm.Model
+	SubredditID int    `gorm:"not null;column:subreddit_id;unique;autoIncrement;"`
+	Name        string `gorm:"not null;type:varchar(32);column:name;unique;index"`
+
+	Posts []Post `gorm:"foreignKey:SubredditRefer"`
 }
 
 func CreateSubreddit(subreddit *Subreddit) error {

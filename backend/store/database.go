@@ -1,20 +1,13 @@
 package store
 
 import (
-	"time"
+	"fmt"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
-
-type BaseModel struct {
-	ID        int64          `gorm:"primaryKey;autoIncrement;column:id"`
-	CreatedAt time.Time      `gorm:"autoCreateTime;column:created_at"`
-	UpdatedAt time.Time      `gorm:"autoUpdateTime;column:updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index;column:deleted_at"`
-}
 
 func Init() (*gorm.DB, error) {
 	var err error
@@ -27,13 +20,15 @@ func Init() (*gorm.DB, error) {
 	// if err != nil {
 	// 	fmt.Println(error)
 	// }
+
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	models := []interface{}{&User{}, &Subreddit{}, &Like{}, &Dislike{}, &Post{}}
+	models := []interface{}{&User{}, &Subreddit{}, &Post{}}
 
 	for _, model := range models {
+		fmt.Printf("Migrating model: %+v\n", model)
 		if err := db.AutoMigrate(model); err != nil {
 			panic("failed to migrate model")
 		}

@@ -22,7 +22,7 @@ func GetPosts(c *gin.Context) {
 func CreatePost(c *gin.Context) {
 	post := c.MustGet(gin.BindKey).(*store.Post)
 	user := c.MustGet("user").(*store.User)
-	post.UserID = user.ID
+	post.UserID = user.UserID
 
 	if err := store.CreatePost(post); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not create post"})
@@ -41,7 +41,7 @@ func LikePost(c *gin.Context) {
 	}
 	user := c.MustGet("user").(*store.User)
 
-	if err := store.LikePost(int64(postIdInt), user.ID); err != nil {
+	if err := store.LikePost(int(postIdInt), user.UserID); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not like post"})
 		return
 	}
@@ -58,7 +58,7 @@ func DislikePost(c *gin.Context) {
 	}
 	user := c.MustGet("user").(*store.User)
 
-	if err := store.DislikePost(int64(postIdInt), user.ID); err != nil {
+	if err := store.DislikePost(int(postIdInt), user.UserID); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not dislike post"})
 		return
 	}
