@@ -27,7 +27,7 @@ type Post struct {
 
 func GetPosts() ([]Post, error) {
 	var posts []Post
-	result := db.Preload("User").Preload("Subreddit").Find(&posts)
+	result := db.Preload("User").Preload("Subreddit").Preload("Children").Preload("Parent").Find(&posts)
 
 	return posts, result.Error
 }
