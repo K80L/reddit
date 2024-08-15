@@ -4,17 +4,17 @@ import "gorm.io/gorm"
 
 type Like struct {
 	gorm.Model
-	UserID int  `gorm:"not null;column:user_ref"`
+	UserID int  `gorm:"not null;column:user_id"`
 	User   User `gorm:"foreignKey:UserID"`
-	PostID int  `gorm:"not null;column:post_ref"`
+	PostID int  `gorm:"not null;column:post_id"`
 	Post   Post `gorm:"foreignKey:PostID"`
 }
 
 type Dislike struct {
 	gorm.Model
-	UserID int  `gorm:"not null;column:user_ref"`
+	UserID int  `gorm:"not null;column:user_id"`
 	User   User `gorm:"foreignKey:UserID"`
-	PostID int  `gorm:"not null;column:post_ref"`
+	PostID int  `gorm:"not null;column:post_id"`
 	Post   Post `gorm:"foreignKey:PostID"`
 }
 

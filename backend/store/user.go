@@ -7,6 +7,9 @@ type User struct {
 	Username string `gorm:"not null;type:varchar(255);column:username;unique"`
 	Password string `gorm:"not null;type:varchar(255);column:password"`
 	Email    string `gorm:"not null;type:varchar(255);column:email;unique"`
+
+	Likes    []Like    `gorm:"foreignKey:UserID"`
+	Dislikes []Dislike `gorm:"foreignKey:UserID"`
 }
 
 func AddUser(user *User) error {
@@ -25,6 +28,14 @@ func AddUser(user *User) error {
 func GetUser(username string) (*User, error) {
 	var user User
 	result := db.Where("username = ?", username).First(&user)
+
+	return &user, result.Error
+}
+
+func GetUserById(id int) (*User, error) {
+	var user User
+
+	result := db.Preload("Likes").Preload("Dislikes").Where("id = ?", id).First(&user)
 
 	return &user, result.Error
 }

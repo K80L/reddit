@@ -25,12 +25,19 @@ func Init() {
 
 	router := r.Group("/api", Protect)
 
+	// User
+	router.GET("/user/:id", api.GetUserById)
+
+	// Post
 	router.GET("/post", api.GetPosts)
 	router.POST("/post", gin.Bind(store.Post{}), api.CreatePost)
-	router.POST("/post/:post_id/like", api.LikePost)
-	router.POST("/post/:post_id/dislike", api.DislikePost)
+	router.POST("/post/:id/like", api.LikePost)
+	router.POST("/post/:id/dislike", api.DislikePost)
 
+	// Subreddit
 	router.POST("/subreddit", gin.Bind(store.Subreddit{}), api.CreateSubreddit)
+	router.GET("/subreddit/:id", api.GetSubreddit)
+
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",

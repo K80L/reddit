@@ -34,14 +34,14 @@ func CreatePost(c *gin.Context) {
 
 func LikePost(c *gin.Context) {
 	postID := c.Param("id")
-	postIDInt, err := strconv.ParseInt(postID, 10, 32)
+	postIDInt, err := strconv.Atoi(postID)
 
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 	}
 	user := c.MustGet("user").(*store.User)
 
-	if err := store.LikePost(int(postIDInt), int(user.ID)); err != nil {
+	if err := store.LikePost(postIDInt, int(user.ID)); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not like post"})
 		return
 	}

@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/K80L/reddit/backend/store"
@@ -32,6 +33,14 @@ func Login(c *gin.Context) {
 		setCookie(c, user)
 		c.JSON(http.StatusOK, gin.H{"msg": "Logged in"})
 	}
+}
+
+func GetUserById(c *gin.Context) {
+	userId := c.Param("id")
+	id, _ := strconv.Atoi(userId)
+	user, _ := store.GetUserById(id)
+
+	c.JSON(http.StatusOK, user)
 }
 
 func setCookie(c *gin.Context, user *store.User) {

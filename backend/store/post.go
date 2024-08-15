@@ -8,8 +8,8 @@ type Post struct {
 	Title   string `gorm:"not null;type:varchar(100);column:title"`
 	Content string `gorm:"not null;type:text;column:content"`
 
-	// Likes   []Like
-	// Disikes []Dislike
+	Likes   []Like    `gorm:"foreignKey:PostID"`
+	Disikes []Dislike `gorm:"foreignKey:PostID"`
 
 	// Posts can have one parent post and many children posts
 	ParentID *int   `gorm:"column:parent_id" json:"parent_id"`

@@ -15,9 +15,9 @@ func CreateSubreddit(subreddit *Subreddit) error {
 	return result.Error
 }
 
-func GetSubreddit(name string) (*Subreddit, error) {
+func GetSubreddit(id int) (*Subreddit, error) {
 	var subreddit Subreddit
-	result := db.Preload("Posts").Where("name = ?", name).First(&subreddit)
+	result := db.Preload("Posts").Where("id = ?", id).First(&subreddit)
 
 	return &subreddit, result.Error
 }

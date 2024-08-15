@@ -1,8 +1,6 @@
 package store
 
 import (
-	"fmt"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -29,7 +27,6 @@ func Init() (*gorm.DB, error) {
 	models := []interface{}{&User{}, &Subreddit{}, &Post{}, &Like{}, &Dislike{}}
 
 	for _, model := range models {
-		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMigrating model: %+v\n", model)
 		if err := db.AutoMigrate(model); err != nil {
 			panic("failed to migrate model")
 		}
