@@ -4,42 +4,42 @@ import "gorm.io/gorm"
 
 type Like struct {
 	gorm.Model
-	UserID int  `gorm:"not null;column:user_id"`
-	User   User `gorm:"foreignKey:UserID;references:UserID"`
-	PostID int  `gorm:"not null;colunn:post_id"`
-	Post   Post `gorm:"foreignKey:PostID;references:PostID"`
+	UserID int  `gorm:"not null;column:user_ref"`
+	User   User `gorm:"foreignKey:UserID"`
+	PostID int  `gorm:"not null;column:post_ref"`
+	Post   Post `gorm:"foreignKey:PostID"`
 }
 
 type Dislike struct {
 	gorm.Model
-	UserID int  `gorm:"not null;column:user_id"`
-	User   User `gorm:"foreignKey:UserID;references:UserID"`
-	PostID int  `gorm:"not null;colunn:post_id"`
-	Post   Post `gorm:"foreignKey:PostID;references:PostID"`
+	UserID int  `gorm:"not null;column:user_ref"`
+	User   User `gorm:"foreignKey:UserID"`
+	PostID int  `gorm:"not null;column:post_ref"`
+	Post   Post `gorm:"foreignKey:PostID"`
 }
 
-func LikePost(postId, userId int) error {
+func LikePost(postID, userID int) error {
 	post := Post{}
 
-	result := db.Where("id = ?", postId).First(&post)
+	result := db.Where("id = ?", postID).First(&post)
 
 	if result.Error != nil {
 		return result.Error
 	}
 
-	db.Create(&Like{UserID: userId, PostID: postId})
+	db.Create(&Like{UserID: userID, PostID: postID})
 	return result.Error
 }
 
-func DislikePost(postId, userId int) error {
+func DislikePost(postID, userID int) error {
 	post := Post{}
 
-	result := db.Where("id = ?", postId).First(&post)
+	result := db.Where("id = ?", postID).First(&post)
 
 	if result.Error != nil {
 		return result.Error
 	}
 
-	db.Create(&Dislike{UserID: userId, PostID: postId})
+	db.Create(&Dislike{UserID: userID, PostID: postID})
 	return result.Error
 }

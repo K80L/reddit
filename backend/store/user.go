@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
-	UserID   int    `gorm:"not null;column:user_id;unique;autoIncrement;primaryKey"`
 	Username string `gorm:"not null;type:varchar(255);column:username;unique"`
 	Password string `gorm:"not null;type:varchar(255);column:password"`
 	Email    string `gorm:"not null;type:varchar(255);column:email;unique"`

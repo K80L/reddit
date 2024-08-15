@@ -22,7 +22,7 @@ func GetPosts(c *gin.Context) {
 func CreatePost(c *gin.Context) {
 	post := c.MustGet(gin.BindKey).(*store.Post)
 	user := c.MustGet("user").(*store.User)
-	post.UserID = user.UserID
+	post.UserID = int(user.ID)
 
 	if err := store.CreatePost(post); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not create post"})
@@ -33,15 +33,15 @@ func CreatePost(c *gin.Context) {
 }
 
 func LikePost(c *gin.Context) {
-	postId := c.Param("id")
-	postIdInt, err := strconv.ParseInt(postId, 10, 32)
+	postID := c.Param("id")
+	postIDInt, err := strconv.ParseInt(postID, 10, 32)
 
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 	}
 	user := c.MustGet("user").(*store.User)
 
-	if err := store.LikePost(int(postIdInt), user.UserID); err != nil {
+	if err := store.LikePost(int(postIDInt), int(user.ID)); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not like post"})
 		return
 	}
@@ -50,15 +50,15 @@ func LikePost(c *gin.Context) {
 }
 
 func DislikePost(c *gin.Context) {
-	postId := c.Param("id")
-	postIdInt, err := strconv.ParseInt(postId, 10, 32)
+	postID := c.Param("id")
+	postIDInt, err := strconv.ParseInt(postID, 10, 32)
 
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
 	}
 	user := c.MustGet("user").(*store.User)
 
-	if err := store.DislikePost(int(postIdInt), user.UserID); err != nil {
+	if err := store.DislikePost(int(postIDInt), int(user.ID)); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Could not dislike post"})
 		return
 	}

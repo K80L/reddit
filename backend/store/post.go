@@ -4,7 +4,6 @@ import "gorm.io/gorm"
 
 type Post struct {
 	gorm.Model
-	PostID int `gorm:"not null;column:post_id;unique;autoIncrement;primaryKey"`
 
 	Title   string `gorm:"not null;type:varchar(100);column:title"`
 	Content string `gorm:"not null;type:text;column:content"`
@@ -14,16 +13,16 @@ type Post struct {
 
 	// Posts can have one parent post and many children posts
 	ParentID *int   `gorm:"column:parent_id" json:"parent_id"`
-	Parent   *Post  `gorm:"foreignKey:ParentID;references:PostID"`
-	Children []Post `gorm:"foreignKey:ParentID;references:PostID"`
+	Parent   *Post  `gorm:"foreignKey:ParentID;references:ID"`
+	Children []Post `gorm:"foreignKey:ParentID;references:ID"`
 
 	// Posts belong to a subreddit
-	SubredditRefer int       `gorm:"not null;column:subreddit_refer" json:"subreddit_refer"`
-	Subreddit      Subreddit `gorm:"foreignKey:SubredditRefer"`
+	SubredditID int       `gorm:"not null;column:subreddit_id" json:"subreddit_id"`
+	Subreddit   Subreddit `gorm:"foreignKey:SubredditID"`
 
 	// Posts belong to a user
 	UserID int  `gorm:"not null;column:user_id" json:"user_id"`
-	User   User `gorm:"foreignKey:UserID;references:UserID"`
+	User   User `gorm:"foreignKey:UserID"`
 }
 
 func GetPosts() ([]Post, error) {

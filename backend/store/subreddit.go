@@ -4,10 +4,9 @@ import "gorm.io/gorm"
 
 type Subreddit struct {
 	gorm.Model
-	SubredditID int    `gorm:"not null;column:subreddit_id;unique;autoIncrement;"`
-	Name        string `gorm:"not null;type:varchar(32);column:name;unique;index"`
+	Name string `gorm:"not null;type:varchar(32);column:name;unique;index"`
 
-	Posts []Post `gorm:"foreignKey:SubredditRefer"`
+	Posts []Post `gorm:"foreignKey:SubredditID"`
 }
 
 func CreateSubreddit(subreddit *Subreddit) error {

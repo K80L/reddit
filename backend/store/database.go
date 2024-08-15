@@ -14,6 +14,7 @@ func Init() (*gorm.DB, error) {
 	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=UTC"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+	db = db.Debug()
 
 	//error := db.Migrator().DropTable(&Post{}, &Subreddit{}, &User{})
 
@@ -25,10 +26,10 @@ func Init() (*gorm.DB, error) {
 		panic("failed to connect database")
 	}
 
-	models := []interface{}{&User{}, &Subreddit{}, &Post{}}
+	models := []interface{}{&User{}, &Subreddit{}, &Post{}, &Like{}, &Dislike{}}
 
 	for _, model := range models {
-		fmt.Printf("Migrating model: %+v\n", model)
+		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMigrating model: %+v\n", model)
 		if err := db.AutoMigrate(model); err != nil {
 			panic("failed to migrate model")
 		}
