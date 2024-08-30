@@ -32,8 +32,22 @@ func GetPosts() ([]Post, error) {
 	return posts, result.Error
 }
 
+func GetPostByID(postID int) (Post, error) {
+	var post Post
+	result := db.Preload("User").Where("id = ?", postID).First(&post)
+
+	return post, result.Error
+}
+
 func CreatePost(post *Post) error {
 	result := db.Create(post)
+
+	return result.Error
+}
+
+func DeletePost(id int) error {
+	// soft delete
+	result := db.Delete(Post{}, id) // Is this how to do a Delete??
 
 	return result.Error
 }

@@ -7,6 +7,7 @@ type Subreddit struct {
 	Name string `gorm:"not null;type:varchar(32);column:name;unique;index"`
 
 	Posts []Post `gorm:"foreignKey:SubredditID"`
+	// Users []User `gorm:"foreignKey:ID"` // many-to-many relationship w/ Users
 }
 
 func CreateSubreddit(subreddit *Subreddit) error {

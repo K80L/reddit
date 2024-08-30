@@ -43,3 +43,31 @@ func DislikePost(postID, userID int) error {
 	db.Create(&Dislike{UserID: userID, PostID: postID})
 	return result.Error
 }
+
+func UndoLikePost(postID, userID int) error {
+	like := Like{}
+
+	result := db.Where("post_id", postID).Where("user_id", userID).First(&like)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	db.Delete(&like)
+
+	return result.Error
+}
+
+func UndoDislikePost(postID, userID int) error {
+	dislike := Dislike{}
+
+	result := db.Where("post_id", postID).Where("user_id", userID).First(&dislike)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	db.Delete(&dislike)
+
+	return result.Error
+}

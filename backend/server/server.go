@@ -19,10 +19,12 @@ func Init() {
 		AllowHeaders: []string{"Content-Type,access-control-allow-origin,access-control-allow-headers,Authorization"},
 	}))
 
+	// public APIs
 	r.Use(CustomErrors)
 	r.POST("/signup", gin.Bind(store.User{}), api.SignUp)
 	r.POST("/login", gin.Bind(store.User{}), api.Login)
 
+	// protected APIs
 	router := r.Group("/api", Protect)
 
 	// User
