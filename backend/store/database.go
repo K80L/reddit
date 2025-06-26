@@ -1,6 +1,9 @@
 package store
 
 import (
+	"log"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -9,8 +12,11 @@ var db *gorm.DB
 
 func Init() (*gorm.DB, error) {
 	var err error
-	dsn := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=UTC"
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dbConnectionString := os.Getenv("DATABASE_URL")
+	if dbConnectionString == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+	db, err = gorm.Open(postgres.Open(dbConnectionString), &gorm.Config{})
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	db = db.Debug()
 
@@ -24,7 +30,7 @@ func Init() (*gorm.DB, error) {
 		panic("failed to connect database")
 	}
 
-	models := []interface{}{&User{}, &Subreddit{}, &Post{}, &Like{}, &Dislike{}}
+	models := []any{&User{}, &Subreddit{}, &Post{}, &Like{}}
 
 	for _, model := range models {
 		if err := db.AutoMigrate(model); err != nil {

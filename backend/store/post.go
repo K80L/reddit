@@ -8,8 +8,7 @@ type Post struct {
 	Title   string `gorm:"not null;type:varchar(100);column:title"`
 	Content string `gorm:"not null;type:text;column:content"`
 
-	Likes   []Like    `gorm:"foreignKey:PostID"`
-	Disikes []Dislike `gorm:"foreignKey:PostID"`
+	Likes []Like `gorm:"foreignKey:PostID"`
 
 	// Posts can have one parent post and many children posts
 	ParentID *int   `gorm:"column:parent_id" json:"parent_id"`
@@ -25,29 +24,37 @@ type Post struct {
 	User   User `gorm:"foreignKey:UserID"`
 }
 
-func GetPosts() ([]Post, error) {
+type PostStore struct {
+	db *gorm.DB
+}
+
+func NewPostStore(db *gorm.DB) (*PostStore, error) {
+	return &PostStore{db: db}, nil
+}
+
+func (s *PostStore) GetPosts() ([]Post, error) {
 	var posts []Post
-	result := db.Preload("User").Preload("Subreddit").Preload("Children").Preload("Parent").Find(&posts)
+	result := s.db.Preload("User").Preload("Subreddit").Preload("Children").Preload("Parent").Find(&posts)
 
 	return posts, result.Error
 }
 
-func GetPostByID(postID int) (Post, error) {
+func (s *PostStore) GetPostByID(postID int) (Post, error) {
 	var post Post
-	result := db.Preload("User").Where("id = ?", postID).First(&post)
+	result := s.db.Preload("User").Where("id = ?", postID).First(&post)
 
 	return post, result.Error
 }
 
-func CreatePost(post *Post) error {
-	result := db.Create(post)
+func (s *PostStore) CreatePost(post *Post) error {
+	result := s.db.Create(post)
 
 	return result.Error
 }
 
-func DeletePost(id int) error {
+func (s *PostStore) DeletePost(id int) error {
 	// soft delete
-	result := db.Delete(Post{}, id) // Is this how to do a Delete??
+	result := s.db.Delete(Post{}, id) // Is this how to do a Delete??
 
 	return result.Error
 }

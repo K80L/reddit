@@ -3,73 +3,52 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/K80L/reddit/backend/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 )
 
-func Protect(c *gin.Context) {
-	cookie, err := c.Request.Cookie("token")
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No token cookie found"})
-		c.Abort()
-		return
-	}
-
-	tokenString := cookie.Value
-
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		c.Abort()
-		return
-	}
-
-	claims := jwt.MapClaims{}
-	// Parse the token
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+func Protect(userStore *store.UserStore) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username, err := store.ValidateJWT(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
 		}
-		jwtSecret := os.Getenv("JWT_SECRET")
 
-		return []byte(jwtSecret), nil
-	})
+		user, err := userStore.GetUser(username)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
 
-	if err != nil || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		c.Abort()
-		return
+		// set user in context for later use
+		c.Set("user", user)
+		c.Next()
 	}
-
-	username := claims["username"].(string)
-	user, err := store.GetUser(username)
-
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-	}
-
-	c.Set("user", user)
 }
 
 func CustomErrors(c *gin.Context) {
 	c.Next()
+
 	if len(c.Errors) > 0 {
 		fmt.Println(c.Errors)
+
 		for _, err := range c.Errors {
 			fmt.Println(err.Type)
+
 			switch err.Type {
 			case gin.ErrorTypePublic:
 				if !c.Writer.Written() {
 					c.AbortWithStatusJSON(c.Writer.Status(), gin.H{"error": err.Error()})
+					return
 				}
 
 			case gin.ErrorTypeBind:
 				errMap := make(map[string]string)
+
 				if errs, ok := err.Err.(validator.ValidationErrors); ok {
 					for _, fieldErr := range []validator.FieldError(errs) {
 						errMap[fieldErr.Field()] = customValidationError(fieldErr)
@@ -81,7 +60,9 @@ func CustomErrors(c *gin.Context) {
 				if c.Writer.Status() != http.StatusOK {
 					status = c.Writer.Status()
 				}
+
 				c.AbortWithStatusJSON(status, gin.H{"error": errMap})
+				return
 			default:
 				log.Error().Err(err.Err).Msg("Unknown error")
 			}
@@ -89,6 +70,7 @@ func CustomErrors(c *gin.Context) {
 
 		if !c.Writer.Written() {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			return
 		}
 	}
 }

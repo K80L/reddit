@@ -1,6 +1,9 @@
+// The server package is responsible for initializing the Gin server, setting up routes, and applying middleware.
+// This is the entry point for our backend application server where we define the API endpoints and attach handlers.
 package server
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/K80L/reddit/backend/api"
@@ -14,33 +17,61 @@ func Init() {
 	r.RedirectTrailingSlash = true
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowHeaders: []string{"Content-Type,access-control-allow-origin,access-control-allow-headers,Authorization"},
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Content-Type,access-control-allow-origin,access-control-allow-headers,Authorization"},
+		AllowCredentials: true,
 	}))
+
+	db := store.GetConnection()
+
+	userStore, err := store.NewUserStore(db)
+	if err != nil {
+		log.Fatal("Error initializing user store")
+	}
+
+	subredditStore, err := store.NewSubredditStore(db)
+	if err != nil {
+		log.Fatal("Error initializing subreddit store")
+	}
+
+	postStore, err := store.NewPostStore(db)
+	if err != nil {
+		log.Fatal("Error initializing post store")
+	}
+
+	postHandler := api.NewPostHandler(postStore)
+	userHandler := api.NewUserHandler(userStore)
+	subredditHandler := api.NewSubredditHandler(subredditStore)
 
 	// public APIs
 	r.Use(CustomErrors)
-	r.POST("/signup", gin.Bind(store.User{}), api.SignUp)
-	r.POST("/login", gin.Bind(store.User{}), api.Login)
+	// gin.Bind(store.User{}) binds the request body to a User struct and store in the context.
+	r.POST("/signup", gin.Bind(store.User{}), userHandler.SignUp)
+	r.POST("/login", gin.Bind(store.User{}), userHandler.Login)
 
 	// protected APIs
-	router := r.Group("/api", Protect)
+	protected := r.Group("/api", Protect(userStore))
 
 	// User
-	router.GET("/user/:id", api.GetUserById)
+	protected.GET("/user/:id", userHandler.GetUserById)
+	protected.GET("/user/authenticate", userHandler.CheckIfLoggedIn)
+	protected.GET("/user/logout", userHandler.Logout)
 
 	// Post
-	router.GET("/post", api.GetPosts)
-	router.POST("/post", gin.Bind(store.Post{}), api.CreatePost)
-	router.POST("/post/:id/like", api.LikePost)
-	router.POST("/post/:id/dislike", api.DislikePost)
+	protected.GET("/post", postHandler.GetPosts)
+	// gin.Bind(store.Post{}) is a Middleware that tells Gin to automatically bind (parse and validate)
+	// the request body into a Post struct and make it available in the context.
+	protected.POST("/post", gin.Bind(store.Post{}), postHandler.CreatePost)
+	// protected.POST("/post/:id/like", postHandler.LikePost)
+	// protected.POST("/post/:id/dislike", postHandler.DislikePost)
 
 	// Subreddit
-	router.POST("/subreddit", gin.Bind(store.Subreddit{}), api.CreateSubreddit)
-	router.GET("/subreddit/:id", api.GetSubreddit)
+	protected.POST("/subreddit", gin.Bind(store.Subreddit{}), subredditHandler.CreateSubreddit)
+	protected.GET("/subreddit/:id", subredditHandler.GetSubreddit)
 
-	router.GET("/ping", func(c *gin.Context) {
+	// Health check
+	protected.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})

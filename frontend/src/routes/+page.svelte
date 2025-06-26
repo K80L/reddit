@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import Card from '../components/card.svelte';
+  import { customFetch as fetch } from '../utils/fetch';
+
+  let data = $state([]);
 
   onMount(async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/post', {});
-      const data = await response.json();
+      data = await fetch('api/post', {});
       console.log(data);
     } catch (error) {
       console.error(error);
@@ -14,8 +16,10 @@
 </script>
 
 <main class="main-content">
-  <Card />
-  <div>Hello</div>
+  {#each data as post}
+    <Card post={post} />
+  {/each}
+  <div><p>Hello</p></div>
 </main>
 
 <style>

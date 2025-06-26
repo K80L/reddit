@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -49,14 +50,46 @@ func CreateJWT(user *User) string {
 	return tokenString
 }
 
-func Authenticate(username, password string) (*User, error) {
-	user, err := GetUser(username)
+func (s *UserStore) Authenticate(username, password string) (*User, error) {
+	user, err := s.GetUser(username)
 
 	if !ComparePassword(password, user.Password) {
 		return nil, fmt.Errorf("Invalid password")
 	}
 
 	return user, err
+}
+
+func ValidateJWT(c *gin.Context) (string, error) {
+	cookie, err := c.Request.Cookie("token")
+	if err != nil {
+		return "", fmt.Errorf("No token cookie found")
+	}
+
+	tokenString := cookie.Value
+	if tokenString == "" {
+		return "", fmt.Errorf("Unauthorized")
+	}
+
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		jwtSecret := os.Getenv("JWT_SECRET")
+		return []byte(jwtSecret), nil
+	})
+
+	if err != nil || !token.Valid {
+		return "", fmt.Errorf("Unauthorized")
+	}
+
+	username, ok := claims["username"].(string)
+	if !ok {
+		return "", fmt.Errorf("Invalid token claims")
+	}
+
+	return username, nil
 }
 
 // Encrypts a password using bcrypt

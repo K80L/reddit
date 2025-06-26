@@ -10,15 +10,23 @@ type Subreddit struct {
 	// Users []User `gorm:"foreignKey:ID"` // many-to-many relationship w/ Users
 }
 
-func CreateSubreddit(subreddit *Subreddit) error {
-	result := db.Create(subreddit)
+type SubredditStore struct {
+	db *gorm.DB
+}
+
+func NewSubredditStore(db *gorm.DB) (*SubredditStore, error) {
+	return &SubredditStore{db: db}, nil
+}
+
+func (s *SubredditStore) CreateSubreddit(subreddit *Subreddit) error {
+	result := s.db.Create(subreddit)
 
 	return result.Error
 }
 
-func GetSubreddit(id int) (*Subreddit, error) {
+func (s *SubredditStore) GetSubreddit(id int) (*Subreddit, error) {
 	var subreddit Subreddit
-	result := db.Preload("Posts").Where("id = ?", id).First(&subreddit)
+	result := s.db.Preload("Posts").Where("id = ?", id).First(&subreddit)
 
 	return &subreddit, result.Error
 }
